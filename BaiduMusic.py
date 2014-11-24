@@ -62,7 +62,7 @@ class BaiduMusic:
             dirname_list = re.findall(r'</span>([^"]+)</h2>', 
                                       self.__req_content)
         if dirname_list != []:
-            self.__store_dir = dirname_list[0]
+            self.__store_dir = dirname_list[0].replace(' ', '')
 
     def get_song_id_list(self):
         assert self.__source_url
@@ -75,13 +75,18 @@ class BaiduMusic:
         req = requests.get(self.__source_url)
         source_html = req.content
         self.__req_content = source_html
-        song_id_list = re.findall(r'data-ids="([^"]+)"', source_html)
-        try:
-            song_id_list = song_id_list[0].replace(' ', '').split(',')
-        except IndexError:
-            sys.stdout.write('IndexError 404: No song found.\n')
-            sys.stdout.flush()
-            sys.exit()
+        song_id_list = []
+        if self.__type != 'song_id_list':
+            song_id_list = re.findall(r'data-ids="([^"]+)"', source_html)
+            try:
+                song_id_list = song_id_list[0].replace(' ', '').split(',')
+            except IndexError:
+                sys.stdout.write('IndexError 404: No song found.\n')
+                sys.stdout.flush()
+                sys.exit()
+        else :
+            song_id_list = re.findall(r'<a href="/song/([^"t]+)"',
+                                      source_html)
 
         self.__song_id_list = song_id_list
         self.__song_number = len(song_id_list)
