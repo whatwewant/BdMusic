@@ -48,7 +48,7 @@ class MusicDownload(object):
             songName = self.__SONG_NAME,
             author = self.__SONG_AUTHOR,
             format = self.__SONG_FORMAT,
-            )
+            ).strip()
 
         download = Download()
         download.download(self.__SONG_REAL_URL, mp3Name, path, id, ids)

@@ -8,6 +8,7 @@ import time
 import random
 # import traceback
 import threading
+import socket
 
 reload(sys)
 sys.setdefaultencoding('utf-8')
@@ -511,6 +512,9 @@ class Download:
                     self.print_status(file_size_dl, start_second, id)
                     every_second = time.time()
             tf.close()
+        except socket.timeout:
+            print('Error: socket.timeout')
+            return (self.__all_file_size, 0)
         except :
             raise
             tf.close()
