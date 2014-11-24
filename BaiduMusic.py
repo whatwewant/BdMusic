@@ -1,0 +1,210 @@
+#!/usr/bin/env python
+# coding=utf-8
+
+import sys
+import os
+import requests
+import re
+from BaiduMusicUtils import MusicDownload
+from datetime import date
+
+reload(sys)
+sys.setdefaultencoding('utf-8')
+
+class BaiduMusic:
+    
+    VERSION = '3.0.0'
+
+    def __init__(self):
+        self.__BASE_URL = {
+            'album': r'http://music.baidu.com/album/{para}',
+            'artist': r'http://music.baidu.com/artist/{para}',
+            'author': r'http://music.baidu.com/search/song?\
+                    s=1&key={para}&start=0&size=50',
+            'song': r'http://music.baidu.com/song/{para}',
+            'songlist': r'http://music.baidu.com/songlist/{para}',
+        }
+
+        self.__type = None
+        self.__para = None
+
+        self.__store_dir_re = None;
+
+        self.__source_url = None # 原始链接
+        self.__req_content = None # 请求页面的内容
+        self.__song_id_list = [] # 列表, 歌的ID
+        self.__song_number = 0 # 几首歌
+        self.__store_dir = str(date.today()) 
+
+    def set_url(self, type, para):
+        self.__source_url = self.__BASE_URL[type].format(para=para)
+        self.__type = type
+        self.__para = para
+
+        self.__store_dir_re = {
+            'album': 'album_' + self.__para,
+            'artist': r'<h2 class="singer-name">([^"]+)</h2>',
+            'author': self.__para,
+            'song': r'Song',
+            'songlist': r'<h2>([^"]+)</h2>', # r'</span>([^"]+)</h2>'),
+        }
+
+    def set_store_dir(self, type):
+        assert self.__req_content
+
+        if type in ('album', 'author', 'song'):
+            self.__store_dir = self.__store_dir_re[type]
+            return
+
+        dirname_list = re.findall(self.__store_dir_re[type], 
+                                      self.__req_content)
+        if dirname_list == []:
+            dirname_list = re.findall(r'</span>([^"]+)</h2>', 
+                                      self.__req_content)
+        if dirname_list != []:
+            self.__store_dir = dirname_list[0]
+
+    def get_song_id_list(self):
+        assert self.__source_url
+
+        if self.__type == 'song':
+            self.__song_id_list = [ self.__para ]
+            self.__song_number = 1
+            return 
+
+        req = requests.get(self.__source_url)
+        source_html = req.content
+        self.__req_content = source_html
+        song_id_list = re.findall(r'data-ids="([^"]+)"', source_html)
+        try:
+            song_id_list = song_id_list[0].replace(' ', '').split(',')
+        except IndexError:
+            sys.stdout.write('IndexError 404: No song found.\n')
+            sys.stdout.flush()
+            sys.exit()
+
+        self.__song_id_list = song_id_list
+        self.__song_number = len(song_id_list)
+
+    def download(self, type, para):
+        self.set_url(type, para)
+        self.get_song_id_list()
+        self.set_store_dir(type)
+
+        if not self.__song_number:
+            sys.stdout.write('IndexError 404: No song found.\n')
+            sys.stdout.flush()
+            return
+
+        if not os.path.exists(self.__store_dir):
+            os.mkdir(self.__store_dir)
+
+        print('Dir: %s' % self.__store_dir)
+        print('Length: 总共%d首歌' % self.__song_number)
+        id = 1
+        for song_id in self.__song_id_list:
+            md = MusicDownload()
+            md.download_song(song_id, self.__store_dir, id, 
+                             self.__song_number)
+            id += 1
+
+
+    @staticmethod
+    def usage(command):
+        print('NAME:')
+        print('  %s - The Baidu Music Download Class write by python.\n' % command)
+        print('DESCRIPTION:')
+        print('  %s is a Simple Baidu Music Download Class write by python depends \
+              on python-requests. Authored by Cole Smith.\n' % command)
+        print('USAGE:')
+        print('  %s OPTIONS Pareters\n' % command)
+        print('OPTIONS:')
+        print('  -a, --album ID         Download By album id.')
+        print('  -h, --help             Get help about usage and description.')
+        print('  -l, --songlist ID      Download By songlist id.')
+        print('  -n, --author Name      Download By author name.')
+        print('  -p, --path PATH        Specify the filepath where you want to store the file')
+        print('  -r, --artist ID        Download By artist id.')
+        print('  -s, --song ID          Download By song id.')
+        print('  -u, --url URL           Your download file\'s url.')
+        print('  -v, --version          Get download class version.')
+        print('')
+
+    @staticmethod
+    def version(command):
+        sys.stdout.write('%s Version %s\n' % (sys.argv[0], BaiduMusic.VERSION))
+        sys.stdout.flush()
+
+if __name__ == '__main__':
+    import getopt
+    
+    opts = []
+    try:
+        opts, args = getopt.getopt(
+            sys.argv[1:],
+            'a:r:n:hp:s:l:u:v',
+            ['album', 'artist', 'author', 'help', 
+             'path', 'song', 'songlist', 'url', 'version']
+            )
+    except getopt.GetoptError:
+        sys.stdout.write('Get Opt Error\n')
+        sys.stdout.write('%s -h for help\n' % sys.argv[0])
+        sys.stdout.flush()
+        sys.exit()
+    finally: 
+        if opts == []:
+            BaiduMusic.usage(sys.argv[0])
+            sys.exit()
+
+    ID = None
+    Type = None
+    Url = None
+    Name = None
+    
+    for o, a in opts:
+        if Type != None:
+            break
+
+        if o in ('-h', '--help'):
+            BaiduMusic.usage(sys.argv[0])
+            sys.exit()
+        if o in ('-v', '--version'):
+            BaiduMusic.version(sys.argv[0])
+            sys.exit()
+        if o in ('-a', '--album'):
+            Type = 'album'
+            ID = a
+        if o in ('-l', '--songlist'):
+            Type = 'songlist'
+            ID = a
+        if o in ('-r', '--artist'):
+            Type = 'artist'
+            ID = a
+        if o in ('-s', '--song'):
+            Type = 'song'
+            ID = a
+        if o in ('-n', '--author'):
+            Type = 'author'
+            Name = a
+            ID = a
+        if o in ('-u', '--url'):
+            Type = 'url'
+            Url = a
+            
+    if Type == 'url':
+        uu = re.findall(r'http://music.baidu.com/([^/"]+)', Url)
+        oo = re.findall(r'http://music.baidu.com/\w+/(\d[^/?]+)', Url)
+        if uu == [] or oo == []:
+            print('Error: Invalid Url')
+            sys.exit()
+        Type = uu[0]
+        ID = oo[0]
+    
+    if not Type or not ID:
+        print('Error: Type Or ID Invalid')
+        sys.exit(-1)
+    # Main
+    BdMusic = BaiduMusic()
+    BdMusic.download(Type, ID)
+
+
