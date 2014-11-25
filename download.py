@@ -488,10 +488,17 @@ class Download:
 
         (all_size, all_size_unit) = \
                 self.tranform_file_size_and_unit(self.__all_file_size)
-        print('ID:[%d/%d] Dir: %s\nFile: %s [ %.2f %s ]\
-              \b                   ' % (id, ids, self.__file_path, 
-                                         self.__file_name, all_size,
-                                         all_size_unit))
+        dir_log = 'ID:[%d/%d] Dir: %s' % (
+                        id, ids, 
+                        self.__file_path.ljust(50),
+                    )
+        file_log = 'File: %s [ %.2f %s]' % ( 
+                        self.__file_name, 
+                        all_size,
+                        all_size_unit,
+                        )
+        print(dir_log.ljust(50))
+        print(file_log.ljust(50))
 
         tf = ''
         file_size_dl = 0
