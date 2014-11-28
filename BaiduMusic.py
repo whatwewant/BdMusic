@@ -23,6 +23,7 @@ class BaiduMusic:
                     s=1&key={para}&start=0&size=50',
             'song': r'http://music.baidu.com/song/{para}',
             'songlist': r'http://music.baidu.com/songlist/{para}',
+            'tag': r'http://music.baidu.com/tag/{para}?start=0&size=25',
         }
 
         self.__type = None
@@ -47,6 +48,7 @@ class BaiduMusic:
             'author': self.__para,
             'song': r'Song',
             'songlist': r'<h2>([^"]+)</h2>', # r'</span>([^"]+)</h2>'),
+            'tag': '<span class="title">([^"]+)</span>',
         }
 
     def set_store_dir(self, type):
@@ -76,17 +78,17 @@ class BaiduMusic:
         source_html = req.content
         self.__req_content = source_html
         song_id_list = []
-        if self.__type != 'songlist':
-            song_id_list = re.findall(r'data-ids="([^"]+)"', source_html)
-            try:
-                song_id_list = song_id_list[0].replace(' ', '').split(',')
-            except IndexError:
-                #sys.stdout.write('IndexError 404: No song found.\n')
-                #sys.stdout.flush()
-                #sys.exit()
-                pass
-        else :
-            song_id_list = re.findall(r'<a href="/song/([^"]+)',
+        #if self.__type != 'songlist':
+        song_id_list = re.findall(r'data-ids="([^"]+)"', source_html)
+        try:
+            song_id_list = song_id_list[0].replace(' ', '').split(',')
+        except IndexError:
+            #sys.stdout.write('IndexError 404: No song found.\n')
+            #sys.stdout.flush()
+            #sys.exit()
+            pass
+        if song_id_list == []:
+            song_id_list = re.findall(r'<a href="/song/(\d+).*"',
                                       source_html)
 
         self.__song_id_list = song_id_list
@@ -148,9 +150,10 @@ if __name__ == '__main__':
     try:
         opts, args = getopt.getopt(
             sys.argv[1:],
-            'a:r:n:hp:s:l:u:v',
+            'a:r:n:hp:s:l:t:u:v',
             ['album', 'artist', 'author', 'help', 
-             'path', 'song', 'songlist', 'url', 'version']
+             'path', 'song', 'songlist', 'tag', 
+             'url', 'version']
             )
     except getopt.GetoptError:
         sys.stdout.write('Get Opt Error\n')
@@ -196,10 +199,13 @@ if __name__ == '__main__':
         if o in ('-u', '--url'):
             Type = 'url'
             Url = a
+        if o in ('-t', '--tag'):
+            Type = 'tag'
+            ID = a
             
     if Type == 'url':
         uu = re.findall(r'http://music.baidu.com/([^/"]+)', Url)
-        oo = re.findall(r'http://music.baidu.com/\w+/(\d[^/?]+)', Url)
+        oo = re.findall(r'http://music.baidu.com/\w+/(.[^/?]+)', Url)
         if uu == [] or oo == []:
             print('Error: Invalid Url')
             sys.exit()

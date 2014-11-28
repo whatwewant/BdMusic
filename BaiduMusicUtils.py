@@ -50,8 +50,11 @@ class MusicDownload(object):
             format = self.__SONG_FORMAT,
             ).strip()
 
-        download = Download()
-        download.download(self.__SONG_REAL_URL, mp3Name, path, id, ids)
+        if not self.__SONG_REAL_URL:
+            print("No valid Url.")
+        else:
+            download = Download()
+            download.download(self.__SONG_REAL_URL, mp3Name, path, id, ids)
         return mp3Name
 
     def get_real_song_url(self, song_id):
