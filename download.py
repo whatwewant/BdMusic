@@ -17,19 +17,22 @@ VERSION = '1.0.0'
 
 class MultiDownloadThread(threading.Thread):
 
-    def __init__(self, url, file_name, file_path, id):
+    def __init__(self, url, file_name, file_path, id, ids=0):
         super(MultiDownloadThread, self).__init__()
         self.__url = url
         self.__file_name = file_name
         self.__file_path = file_path
         self.__id = id
+        self.__ids = ids
 
     def run(self):
         do = Download()
         do.download(self.__url, 
                     self.__file_name,
                     self.__file_path,
-                    self.__id)
+                    self.__id,
+                    self.__ids,
+                   )
 
 class Download:
     '''
@@ -72,6 +75,8 @@ class Download:
         self.__logfile = 'client_error.log'
         self.__logfile_path = os.path.join\
                 (self.__logdir, self.__logfile)
+        # Does it download Success? >=0 True, <0 False
+        self.__flag = 0
 
     def reset(self):
         self.__url = '' # 1
@@ -111,6 +116,8 @@ class Download:
         self.__logfile = 'client_error.log'
         self.__logfile_path = os.path.join\
                 (self.__logdir, self.__logfile)
+        # Does it download Success? >=0 True, <0 False
+        self.__flag = 0
 
     #def set_internet_available(self):
     #    assert self.__url
@@ -170,9 +177,13 @@ class Download:
             if req.ok:
                 self.__internet_available = True
                 self.__server_response_headers = req.headers
+            else:
+                self.__flag = -1
+                self.__leave_now = True
         except requests.ConnectionError:
             print('No internet connection available')
             self.__leave_now = True
+            self.__flag = -2
         except :
             raise
             sys.exit()
@@ -211,6 +222,7 @@ class Download:
         self.__file_name_exists = os.path.exists(path)
         if self.__file_name_exists:
             self.__file_already_download = True
+            self.__flag = 1
        # print path
        # print self.__file_name_exists
        # if self.__file_name_exists:
@@ -283,6 +295,7 @@ class Download:
 
         # if downloaded and not Modified, return
         if self.__file_already_download:
+            self.__flag = 1
             return 
 
         if not self.__accept_range:
@@ -291,6 +304,7 @@ class Download:
             while True:
                 if times <=0 :
                     self.__leave_now = True
+                    self.__flag = -3
                     return  
 
                 try:
@@ -346,6 +360,7 @@ class Download:
         if not self.__all_file_size:
             self.__file_modified = False
             self.__file_already_download = True
+            self.__flag = 1
             return 
 
         if self.__file_name_exists:
@@ -364,6 +379,7 @@ class Download:
             if local_file_size != self.__all_file_size:
                 self.__file_modified = True
                 self.__file_already_download = False
+                self.__flag = 2
 
     def rename_old_to_new(self, old, new):
         os.rename(old, new)
@@ -444,6 +460,15 @@ class Download:
     def download(self, url, file_name, file_path=None, id=0, ids=0):
         '''
             download main
+            return (all_size, need_download_size, flag)
+            flag:
+                0  Success, download
+                1  Success, and alread downloaded
+                2  Success, and modified , then redownload
+                -1 Failed, and Request but not response
+                -2 Failed, and connection Error
+                -3 Failed, and Request Times Out; Default Times = Twice(2)
+                -4 Failed, and downloading then socket.timeout
         ''' 
         if not ids and id:
             ids = id
@@ -454,7 +479,7 @@ class Download:
         self.set_all_info(url, file_name, file_path)
 
         if self.do_leave_now():
-            return (0, 0)
+            return (0, 0, self.__flag)
 
         if self.isFileDownloaded():
             sys.stdout.write('ID: [%d/%d] Dir: %s ' % 
@@ -462,7 +487,7 @@ class Download:
             sys.stdout.write('File: %s already downloaded\n' % 
                              self.__file_name)
             sys.stdout.flush()
-            return (self.__content_length, 0)
+            return (self.__content_length, 0, self.__flag)
 
         if not self.__requests_ok:
             sys.stdout.write('Error: Request Error!\n')
@@ -471,7 +496,7 @@ class Download:
                         self.__logfile), 'a') as log:
                 log.write('Error Download: ' +
                          self.__url + '\n')
-            return (self.__content_length, 0)
+            return (self.__content_length, 0, self.__flag)
 
         if self.__file_modified:
             sys.stdout.write('Modified: %s has been Modified\n' % self.__file_name)
@@ -521,7 +546,9 @@ class Download:
             tf.close()
         except socket.timeout:
             print('Error: socket.timeout')
-            return (self.__all_file_size, 0)
+            tf.close()
+            self.__flag = -4
+            return (self.__all_file_size, 0, self.__flag)
         except :
             raise
             tf.close()
@@ -529,7 +556,7 @@ class Download:
 
         self.rename_old_to_new(self.__tmp_file_final, self.__file_final)
 
-        return (self.__all_file_size, file_size_dl)
+        return (self.__all_file_size, file_size_dl, self.__flag)
 
     @staticmethod
     def usage(command):

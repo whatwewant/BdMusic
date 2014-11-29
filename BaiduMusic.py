@@ -112,9 +112,9 @@ class BaiduMusic:
         id = 1
         for song_id in self.__song_id_list:
             md = MusicDownload()
-            md.download_song(song_id, self.__store_dir, id, 
-                             self.__song_number)
-            id += 1
+            if md.download_song(song_id, self.__store_dir, id, 
+                                self.__song_number)[2] == 0:
+                id += 1
 
 
     @staticmethod
