@@ -19,10 +19,10 @@ class BaiduMusic:
         self.__BASE_URL = {
             'album': r'http://music.baidu.com/album/{para}',
             'artist': r'http://music.baidu.com/artist/{para}',
-            'author': r'http://music.baidu.com/search/song?\
-                    s=1&key={para}&start=0&size=50',
+            'author': r'http://music.baidu.com/search?\
+                    key={para}',
             'find': r'http://music.baidu.com/search/song?\
-                    s=1&key={para}&jump=0&start={start}&size=20',
+                    s=1&key={para}&start={start}&size=20',
             'song': r'http://music.baidu.com/song/{para}',
             'songlist': r'http://music.baidu.com/songlist/{para}',
             'tag': r'http://music.baidu.com/tag/{para}?start=0&size=25',
@@ -43,7 +43,7 @@ class BaiduMusic:
     def search(self):
         assert self.__req_content
         
-        id_name_reg = r'data-songdata=[\'"]{ "id": "([^"]+)" }.*title=[\'"]([^"]+)[\'"]';
+        id_name_reg = r'data-songdata=[\'"]{ "id": "([^"]+)" }\S*title="([^"]+)"';
         author_reg = r'<span class="author_list" title="([^"]+)">';
         ids_and_names = re.findall(id_name_reg, self.__req_content)
         authors = re.findall(author_reg, self.__req_content)
