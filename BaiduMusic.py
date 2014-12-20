@@ -108,7 +108,8 @@ class BaiduMusic:
         }
 
     def set_store_dir(self, type):
-        assert self.__req_content
+        if type != 'song':
+            assert self.__req_content
 
         # if type in ('album', 'author', 'song'):
         if type in ('author', 'song'):
