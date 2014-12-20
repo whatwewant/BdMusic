@@ -8,8 +8,11 @@ import re
 from BaiduMusicUtils import MusicDownload
 from datetime import date
 
-reload(sys)
-sys.setdefaultencoding('utf-8')
+try:
+    reload(sys)
+    sys.setdefaultencoding('utf-8')
+except:
+    pass
 
 class BaiduMusic:
     
@@ -133,7 +136,7 @@ class BaiduMusic:
 
         if self.__type == 'artist':
             self.__req_content = ''
-            self.__req_content += requests.get(self.__source_url).content
+            self.__req_content += requests.get(self.__source_url).text
             start = 25
             for i in range(5):
                 source_url = r'http://music.baidu.com/data/user/getsongs?start=%s&ting_uid=%s' % (start, self.__para)

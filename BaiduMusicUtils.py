@@ -6,8 +6,11 @@ import json
 
 # 'ascii' codec can't encode characters
 import sys
-reload(sys)
-sys.setdefaultencoding('utf-8')
+try:
+    reload(sys)
+    sys.setdefaultencoding('utf-8')
+except :
+    pass
 
 from download import Download
 
@@ -29,7 +32,11 @@ class MusicDownload(object):
         data_url = self.__SONG_DATA_URL+str(self.__SONG_ID)
         req = requests.get(data_url)
 
-        song_data = json.loads(str(req.content))['data']
+        song_data_json = json.loads(req.text)
+        song_data = song_data_json.get('data', None)
+        if song_data == None:
+            return 
+
         if song_data != '':
             songList = song_data['songList'][0]
             self.__SONG_NAME = songList['songName'].replace('/', '-')
@@ -87,9 +94,9 @@ if __name__ == '__main__':
     
     Baidu = MusicDownload()
     if len(sys.argv) == 1:
-        print "Usage:"
-        print "\t{filename} Song_id".format(filename=sys.argv[0])
-        print "\t{filename} song_id1 song_id2 ...".format(filename=sys.argv[0])
+        print("Usage:")
+        print("\t{filename} Song_id".format(filename=sys.argv[0]))
+        print("\t{filename} song_id1 song_id2 ...".format(filename=sys.argv[0]))
         exit(False)
 
     for song_id in sys.argv:

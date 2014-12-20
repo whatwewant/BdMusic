@@ -10,8 +10,11 @@ import traceback
 import threading
 import socket
 
-reload(sys)
-sys.setdefaultencoding('utf-8')
+try:
+    reload(sys)
+    sys.setdefaultencoding('utf-8')
+except :
+    pass
 
 VERSION = '1.0.0'
 
@@ -434,11 +437,6 @@ class Download:
                                          self.__all_file_size)
 
         if percent > 100:
-            print self.__all_file_size
-            print already_download_size
-            print self.__tmp_file_name_size
-            print self.__content_length_request
-            print self.__all_file_size - self.__tmp_file_name_size
             assert self.__url
             assert self.__file_name
             assert self.__file_path
