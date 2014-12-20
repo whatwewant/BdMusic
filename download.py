@@ -6,7 +6,7 @@ import requests
 import os
 import time
 import random
-# import traceback
+import traceback
 import threading
 import socket
 
@@ -17,7 +17,7 @@ VERSION = '1.0.0'
 
 class MultiDownloadThread(threading.Thread):
 
-    def __init__(self, url, file_name, file_path, id, ids=0):
+    def __init__(self, url, file_name, file_path, id=0, ids=0):
         super(MultiDownloadThread, self).__init__()
         self.__url = url
         self.__file_name = file_name
@@ -77,6 +77,8 @@ class Download:
                 (self.__logdir, self.__logfile)
         # Does it download Success? >=0 True, <0 False
         self.__flag = 0
+        # keep file handle
+        self.__file_handle = None
 
     def reset(self):
         self.__url = '' # 1
@@ -257,7 +259,8 @@ class Download:
     def set_content_length(self):
         assert self.__server_response_headers
         length = self.__server_response_headers.get('Content-Length', None)
-        if length:
+        # 只要length存在，不论是否是0,都要记录
+        if length != None:
             self.__content_length = int(length)
 
     def set_file_size_unit(self):
@@ -324,11 +327,16 @@ class Download:
             self.__content_length_request = self.__content_length
         else:
             assert self.__range_headers
-            self.__requests_stream_object = requests.get(self.__url, 
+            try:
+                self.__requests_stream_object = requests.get(self.__url, 
                         stream=True, headers=self.__range_headers)
-            self.__requests_ok = self.__requests_stream_object.ok
-            self.__content_length_request = self.__requests_stream_object\
-                    .headers.get('Content-Length')
+                self.__requests_ok = self.__requests_stream_object.ok
+                self.__content_length_request = \
+                        self.__requests_stream_object\
+                        .headers.get('Content-Length')
+            except requests.exceptions.ConnectionError:
+                traceback.print_exc()
+                self.__leave_now = True
 
     def file_exists(self, file_path, file_name):
         assert file_path
@@ -361,6 +369,7 @@ class Download:
             self.__file_modified = False
             self.__file_already_download = True
             self.__flag = 1
+            open(self.__file_final, 'w').close()
             return 
 
         if self.__file_name_exists:
@@ -525,12 +534,11 @@ class Download:
         print(dir_log.ljust(50))
         print(file_log.ljust(50))
 
-        tf = ''
         file_size_dl = 0
         #if self.__accept_range and self.__tmp_file_name_size:
         #    file_size_dl = self.__tmp_file_name_size
         try:
-            tf = open(self.__tmp_file_final, self.__open_file_mode)
+            self.__file_handle = open(self.__tmp_file_final, self.__open_file_mode)
             response = self.__requests_stream_object
             start_second = int(time.time())
             every_second = start_second
@@ -538,20 +546,20 @@ class Download:
             for block in response.iter_content(8192):
                 if not block:
                     break
-                tf.write(block)
+                self.__file_handle.write(block)
                 file_size_dl += len(block)
                 if time.time() >= every_second + 0.5:
                     self.print_status(file_size_dl, start_second, id)
                     every_second = time.time()
-            tf.close()
+            self.__file_handle.close()
         except socket.timeout:
             print('Error: socket.timeout')
-            tf.close()
+            self.__file_handle.close()
             self.__flag = -4
             return (self.__all_file_size, 0, self.__flag)
         except :
             raise
-            tf.close()
+            self.__file_handle.close()
             print("Something Wrong!")
 
         self.rename_old_to_new(self.__tmp_file_final, self.__file_final)

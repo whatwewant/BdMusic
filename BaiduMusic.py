@@ -128,6 +128,21 @@ class BaiduMusic:
             self.__song_number = 1
             return -1
 
+        if self.__type == 'artist':
+            self.__req_content = ''
+            self.__req_content += requests.get(self.__source_url).content
+            start = 25
+            for i in range(5):
+                source_url = r'http://music.baidu.com/data/user/getsongs?start=%s&ting_uid=%s' % (start, self.__para)
+                req = requests.get(source_url)
+                errorCode = req.json().get('errorCode')
+                if errorCode != 22000:
+                    return 
+                html = req.json().get('data').get('html')
+                self.__req_content += html
+                start += 25
+            return
+
         req = requests.get(self.__source_url)
         source_html = req.content
         self.__req_content = source_html
@@ -149,12 +164,12 @@ class BaiduMusic:
             #sys.stdout.flush()
             #sys.exit()
             pass
-        if song_id_list == []:
-            song_id_list = re.findall(r'<a href="/song/(\d+).*"',
+        #if song_id_list == []:
+        song_id_list += re.findall(r'<a href="/song/(\d+).*"',
                                       source_html)
 
-        self.__song_id_list = song_id_list
-        self.__song_number = len(song_id_list)
+        self.__song_id_list = list(set(song_id_list))
+        self.__song_number = len(self.__song_id_list)
 
     def download(self, type, para):
         self.set_url(type, para)
