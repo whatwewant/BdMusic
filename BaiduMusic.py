@@ -97,7 +97,8 @@ class BaiduMusic:
             self.__source_url = self.__BASE_URL[type].format(para=para)
 
         self.__store_dir_re = {
-            'album': 'album_' + self.__para,
+            # 'album': 'album_' + self.__para,
+            'album': r'<h2 class="album-name">([^"]+)</h2>',
             'artist': r'<h2 class="singer-name">([^"]+)</h2>',
             'author': self.__para,
             'find': r'Song',
@@ -109,7 +110,8 @@ class BaiduMusic:
     def set_store_dir(self, type):
         assert self.__req_content
 
-        if type in ('album', 'author', 'song'):
+        # if type in ('album', 'author', 'song'):
+        if type in ('author', 'song'):
             self.__store_dir = self.__store_dir_re[type]
             return
 
