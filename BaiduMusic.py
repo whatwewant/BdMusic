@@ -22,6 +22,8 @@ class BaiduMusic:
         self.__BASE_URL = {
             'album': r'http://music.baidu.com/album/{para}',
             'artist': r'http://music.baidu.com/artist/{para}',
+            'moreabout': r'http://music.baidu.com/search/song?'+
+                's=1&key={para}&jump=0&start={start}&size=20',
             'author': r'http://music.baidu.com/search?key={para}',
             'find': r'http://music.baidu.com/search/song?\
                     s=1&key={para}&start={start}&size=20',
@@ -92,7 +94,7 @@ class BaiduMusic:
         self.__type = type
         self.__para = para
 
-        if self.__type == 'find':
+        if self.__type in ['find', 'moreabout']:
             self.__source_url = self.__BASE_URL[type].\
                     format(para=self.__para, start=self.__start)
         else:
@@ -102,6 +104,7 @@ class BaiduMusic:
             # 'album': 'album_' + self.__para,
             'album': r'<h2 class="album-name">([^"]+)</h2>',
             'artist': r'<h2 class="singer-name">([^"]+)</h2>',
+            'moreabout': 'moreabout_{0}'.format(self.__para),
             'author': self.__para,
             'find': r'Song',
             'song': r'Song',
@@ -114,7 +117,7 @@ class BaiduMusic:
             assert self.__req_content
 
         # if type in ('album', 'author', 'song'):
-        if type in ('author', 'song'):
+        if type in ('author', 'song', 'moreabout'):
             self.__store_dir = self.__store_dir_re[type]
             return
 
@@ -133,7 +136,7 @@ class BaiduMusic:
             self.__song_number = 1
             return -1
 
-        if self.__type == 'artist':
+        if self.__type in ['artist']:
             self.__req_content = ''
             self.__req_content += requests.get(self.__source_url).text
             start = 25
@@ -146,6 +149,18 @@ class BaiduMusic:
                 html = req.json().get('data').get('html')
                 self.__req_content += html
                 start += 25
+            return
+
+        if self.__type in ['moreabout']:
+            self.__req_content = ''
+            self.__req_content += requests.get(self.__source_url).text
+            start = 20
+            for i in range(5):
+                source_url = self.__BASE_URL['moreabout'].format(\
+                                        para=self.__para, start=start)
+                req = requests.get(source_url)
+                self.__req_content += req.content
+                start += 20
             return
 
         req = requests.get(self.__source_url)
@@ -217,6 +232,7 @@ class BaiduMusic:
         print('  -f, --find keyword     Download By song id.')
         print('  -h, --help             Get help about usage and description.')
         print('  -l, --songlist ID      Download By songlist id.')
+        print('  -m, --moreabout keyword Download more about keyword.')
         print('  -n, --author Name      Download By author name.')
         print('  -p, --path PATH        Specify the filepath where you want to store the file')
         print('  -r, --artist ID        Download By artist id.')
@@ -238,8 +254,8 @@ if __name__ == '__main__':
     try:
         opts, args = getopt.getopt(
             sys.argv[1:],
-            'a:r:n:hp:s:l:t:u:vf:',
-            ['album', 'artist', 'author', 'help', 
+            'a:r:m:n:hp:s:l:t:u:vf:',
+            ['album', 'artist', 'moreabout', 'author', 'help', 
              'path', 'song', 'songlist', 'tag', 
              'url', 'version', 'find']
             )
@@ -292,6 +308,9 @@ if __name__ == '__main__':
             ID = a
         if o in ('-f', '--find'):
             Type = 'find'
+            ID = a
+        if o in ('-m', '--moreabout'):
+            Type = 'moreabout'
             ID = a
             
     if Type == 'url':
