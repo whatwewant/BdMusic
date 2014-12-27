@@ -22,8 +22,7 @@ class BaiduMusic:
         self.__BASE_URL = {
             'album': r'http://music.baidu.com/album/{para}',
             'artist': r'http://music.baidu.com/artist/{para}',
-            'author': r'http://music.baidu.com/search?\
-                    key={para}',
+            'author': r'http://music.baidu.com/search?key={para}',
             'find': r'http://music.baidu.com/search/song?\
                     s=1&key={para}&start={start}&size=20',
             'song': r'http://music.baidu.com/song/{para}',
