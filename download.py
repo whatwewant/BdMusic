@@ -389,7 +389,8 @@ class Download:
            #     print('File %s Already Download; Length: %d' %
            #          (self.__file_name, self.get_file_name_size()))
             if local_file_size != self.__all_file_size:
-                self.__file_modified = True
+                # self.__file_modified = True
+                self.__leave_now = True
                 self.__file_already_download = False
                 self.__flag = 2
 
