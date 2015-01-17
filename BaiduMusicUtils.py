@@ -32,7 +32,7 @@ class MusicDownload(object):
         data_url = self.__SONG_DATA_URL+str(self.__SONG_ID)
         req = requests.get(data_url)
 
-        song_data_json = json.loads(req.text)
+        song_data_json = json.loads(req.content)
         song_data = song_data_json.get('data', None)
         if song_data == None:
             return 
