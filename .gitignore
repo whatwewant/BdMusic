@@ -3,3 +3,5 @@
 *.bac
 *.swp
 *.mp3
+*dist
+*.egg*
