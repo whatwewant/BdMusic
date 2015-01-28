@@ -35,8 +35,12 @@ class MusicDownload(object):
         try:
             song_data_json = json.loads(req.content)
         except TypeError:
-            song_data_json = json.loads(req.content\
+            if req.encoding:
+                song_data_json = json.loads(req.content\
                                         .decode(req.encoding))
+            else:
+                song_data_json = json.loads(req.content\
+                                        .decode(req.apparent_encoding))
 
         song_data = song_data_json.get('data', None)
         if song_data == None:

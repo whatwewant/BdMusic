@@ -80,7 +80,10 @@ class BaiduMusic:
         self.search_next_page()
 
     def search_next_page(self):
-        answer = raw_input("Would you like to go to next Page ?[y|N]")
+        try:
+            answer = raw_input("Would you like to go to next Page ?[y|N]")
+        except NameError:
+            answer = input("Would you like to go to next Page ?[y|N]")
         if answer != "y" and answer != "Y" \
            and answer != "yes" and answer != "Yes":
             return
