@@ -5,7 +5,7 @@ import sys
 import os
 import requests
 import re
-from BaiduMusicUtils import MusicDownload
+from .BaiduMusicUtils import MusicDownload
 from datetime import date
 
 try:

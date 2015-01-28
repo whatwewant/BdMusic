@@ -12,7 +12,7 @@ try:
 except :
     pass
 
-from download import Download
+from downloadhelper import Download
 
 class MusicDownload(object):
 

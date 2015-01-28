@@ -27,7 +27,7 @@ except :
 
 setup(
     name = 'BdMusic',
-    version = '0.0.1',
+    version = '0.0.2',
     description = 'Baidu Music Download Helper',
     long_description = readme + history,
     author = 'Cole Smith',
