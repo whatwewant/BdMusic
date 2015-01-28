@@ -7,6 +7,7 @@ import requests
 import re
 from .BaiduMusicUtils import MusicDownload
 from datetime import date
+from prettytable import PrettyTable
 
 try:
     reload(sys)
@@ -60,17 +61,25 @@ class BaiduMusic:
             else:
                 i_n_a = (i_n[0], i_n[1], '')
             id_name_authors.append(i_n_a)
-        print('   ' +
-              'ID'.ljust(15, ' ') +
-              ' Name'.ljust(15, ' ') +
-              ' Author'.ljust(15, ' '))
+        #print('   ' +
+        #      'ID'.ljust(15, ' ') +
+        #      ' Name'.ljust(15, ' ') +
+        #      ' Author'.ljust(15, ' '))
+        table = PrettyTable(['ID', 
+                             'SongID', 
+                             'Name', 
+                             'Author'])
         ID = 1
         for i_n_a in id_name_authors:
-            print(str(ID).ljust(2) + ' ' + 
-                  i_n_a[0].ljust(15, ' ') +
-                  i_n_a[1].ljust(20, ' ') +
-                  i_n_a[2].ljust(15, ' ')
-                 )
+            #print(str(ID).ljust(2) + ' ' + 
+            #      i_n_a[0].ljust(15, ' ') +
+            #      i_n_a[1].ljust(20, ' ') +
+            #      i_n_a[2].ljust(15, ' ')
+            #     )
+            table.add_row([ID, 
+                           i_n_a[0], 
+                           i_n_a[1], 
+                           i_n_a[2]])
             ID += 1
 
         # No next Page
