@@ -167,8 +167,7 @@ class BaiduMusic:
             return
 
         req = requests.get(self.__source_url)
-        source_html = req.content
-        self.__req_content = source_html
+        self.__req_content = req.text
 
     def get_song_id_list(self):
         assert self.__source_url
