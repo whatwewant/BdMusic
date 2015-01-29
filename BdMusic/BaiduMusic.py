@@ -81,6 +81,7 @@ class BaiduMusic:
                            i_n_a[1], 
                            i_n_a[2]])
             ID += 1
+        print(table)
 
         # No next Page
         if len(id_name_authors) < 20:
