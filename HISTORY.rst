@@ -8,6 +8,7 @@ Project History: BdMusic
 
 #### Bugfixes
 * fix version not the same
+*  make recursion dirs: replace `os.mkdir` with with `os.makeODdirs`
 
 
 #### 0.0.7 (2015-01-29) 
