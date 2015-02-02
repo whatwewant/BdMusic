@@ -227,7 +227,8 @@ class BaiduMusic:
         self.__store_dir = os.path.join(self.__default_base_dir, 
                                         self.__store_dir)
         if not os.path.exists(self.__store_dir):
-            os.mkdir(self.__store_dir)
+            # os.mkdir(self.__store_dir)
+            os.makedirs(self.__store_dir)
 
         print('Dir: %s' % self.__store_dir)
         print('Length: 总共%d首歌' % self.__song_number)
