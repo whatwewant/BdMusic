@@ -28,7 +28,7 @@ from BdMusic import BaiduMusic
 
 setup(
     name = 'BdMusic',
-    version = BaiduMusic.version(),
+    version = BaiduMusic.VERSION,
     description = 'Baidu Music Download Helper',
     long_description = readme + history,
     author = 'Cole Smith',
