@@ -24,10 +24,11 @@ try:
 except :
     history = ''
         
+from BdMusic import BaiduMusic
 
 setup(
     name = 'BdMusic',
-    version = '0.0.7.2',
+    version = BaiduMusic.version(),
     description = 'Baidu Music Download Helper',
     long_description = readme + history,
     author = 'Cole Smith',

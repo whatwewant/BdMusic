@@ -3,11 +3,15 @@
 
 import sys
 import os
-import requests
 import re
-from .BaiduMusicUtils import MusicDownload
 from datetime import date
-from prettytable import PrettyTable
+
+try:
+    from .BaiduMusicUtils import MusicDownload
+    import requests
+    from prettytable import PrettyTable
+except:
+    pass
 
 try:
     reload(sys)
@@ -17,7 +21,7 @@ except:
 
 class BaiduMusic:
     
-    VERSION = '3.0.0'
+    VERSION = '0.0.8'
 
     def __init__(self):
         self.__BASE_URL = {
@@ -43,6 +47,9 @@ class BaiduMusic:
         self.__req_content = None # 请求页面的内容
         self.__song_id_list = [] # 列表, 歌的ID
         self.__song_number = 0 # 几首歌
+
+        self.__home_dir = os.environ.get('HOME', '.')
+        self.__default_base_dir = os.path.join(self.__home_dir, 'Music/BdMusic')
         self.__store_dir = str(date.today()) 
 
     def search(self):
@@ -217,6 +224,8 @@ class BaiduMusic:
             self.search()
             return 
 
+        self.__store_dir = os.path.join(self.__default_base_dir, 
+                                        self.__store_dir)
         if not os.path.exists(self.__store_dir):
             os.mkdir(self.__store_dir)
 

@@ -1,14 +1,23 @@
 Project History: BdMusic 
 -----------------------
 
+#### 0.0.8 (2015-02-02) 
+----------------------------------------
+#### Behavioural Changes
+* add default dir $HOME/Music/BdMusic/...
+
+#### Bugfixes
+* fix version not the same
+
+
 #### 0.0.7 (2015-01-29) 
 ----------------------------------------
-
 #### Behavioural Changes
 * add package `prettytable`
 
 #### Bugfixes
 * null
+
 
 #### 0.0.6 (2015-01-29) 
 ----------------------------------------
