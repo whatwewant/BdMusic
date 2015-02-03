@@ -8,7 +8,7 @@ import json
 from datetime import date
 
 try:
-    from .BaiduMusicUtils import MusicDownload
+    from BaiduMusicUtils import MusicDownload
     import requests
     from prettytable import PrettyTable
 except:
@@ -22,7 +22,7 @@ except:
 
 class BaiduMusic:
     
-    VERSION = '0.0.9'
+    VERSION = '0.0.10'
 
     def __init__(self):
         self.__BASE_URL = {
@@ -311,7 +311,7 @@ class BaiduMusic:
         sys.stdout.write('%s Version %s\n' % (sys.argv[0], BaiduMusic.VERSION))
         sys.stdout.flush()
 
-if __name__ == '__main__':
+def main():
     import getopt
     
     opts = []
@@ -396,4 +396,5 @@ if __name__ == '__main__':
     BdMusic = BaiduMusic()
     BdMusic.download(Type, ID)
 
-
+if __name__ == '__main__':
+    main()

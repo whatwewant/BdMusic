@@ -1,6 +1,15 @@
 Project History: BdMusic 
 -----------------------
 
+#### 0.0.10 (2015-02-04) 
+----------------------------------------
+#### Behavioural Changes
+* new main func
+
+#### Bugfixes
+*  use new main
+
+
 #### 0.0.9 (2015-02-04) 
 ----------------------------------------
 #### Behavioural Changes
