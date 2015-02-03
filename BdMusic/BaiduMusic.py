@@ -8,7 +8,7 @@ import json
 from datetime import date
 
 try:
-    from BaiduMusicUtils import MusicDownload
+    from .BaiduMusicUtils import MusicDownload
     import requests
     from prettytable import PrettyTable
 except:
@@ -22,7 +22,7 @@ except:
 
 class BaiduMusic:
     
-    VERSION = '0.0.10'
+    VERSION = '0.0.11'
 
     def __init__(self):
         self.__BASE_URL = {
@@ -64,19 +64,22 @@ class BaiduMusic:
         albumData = jsonData.get('album')
         songData = jsonData.get('song')
 
-        artist_table = PrettyTable(['歌手', 'ID'])
+        artist_table = PrettyTable(['', '歌手', 'ID'])
         for each in artistData:
-            artist_table.add_row([each.get('artistname'), 
-                            each.get('artistid')])
+            artist_table.add_row([artistData.index(each)+1, 
+                                  each.get('artistname'), 
+                                  each.get('artistid')])
 
-        album_table = PrettyTable(['专辑', 'ID'])
+        album_table = PrettyTable(['', '专辑', 'ID'])
         for each in albumData:
-            album_table.add_row([each.get('albumname'), 
+            album_table.add_row([albumData.index(each)+1,
+                                 each.get('albumname'), 
                                  each.get('albumid')])
 
-        song_table = PrettyTable(['歌名', '歌手', '歌曲ID'])
+        song_table = PrettyTable(['', '歌名', '歌手', '歌曲ID'])
         for each in songData:
-            song_table.add_row([each.get('songname'), 
+            song_table.add_row([songData.index(each)+1,
+                                each.get('songname'), 
                                 each.get('artistname'), 
                                 each.get('songid')])
 
