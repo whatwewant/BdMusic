@@ -1,6 +1,15 @@
 Project History: BdMusic 
 -----------------------
 
+#### 0.0.9 (2015-02-04) 
+----------------------------------------
+#### Behavioural Changes
+* add -i/--info keyword: search keyword: about artist/album/song
+
+#### Bugfixes
+* getopt: long option: 'help' stands for no arguments, 'help=' stands for having arguments
+
+
 #### 0.0.8 (2015-02-02) 
 ----------------------------------------
 #### Behavioural Changes

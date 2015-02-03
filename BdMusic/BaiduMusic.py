@@ -4,6 +4,7 @@
 import sys
 import os
 import re
+import json
 from datetime import date
 
 try:
@@ -21,7 +22,7 @@ except:
 
 class BaiduMusic:
     
-    VERSION = '0.0.8'
+    VERSION = '0.0.9'
 
     def __init__(self):
         self.__BASE_URL = {
@@ -30,11 +31,13 @@ class BaiduMusic:
             'moreabout': r'http://music.baidu.com/search/song?'+
                 's=1&key={para}&jump=0&start={start}&size=20',
             'author': r'http://music.baidu.com/search?key={para}',
-            'find': r'http://music.baidu.com/search/song?\
-                    s=1&key={para}&start={start}&size=20',
+            'find': r'http://music.baidu.com/search/song?' + \
+                    's=1&key={para}&start={start}&size=20',
             'song': r'http://music.baidu.com/song/{para}',
             'songlist': r'http://music.baidu.com/songlist/{para}',
             'tag': r'http://music.baidu.com/tag/{para}?start=0&size=25',
+            'info': 'http://sug.music.baidu.com/info/suggestion?'+\
+                    'format=json&word={para}',
         }
 
         self.__start = 0
@@ -51,6 +54,36 @@ class BaiduMusic:
         self.__home_dir = os.environ.get('HOME', '.')
         self.__default_base_dir = os.path.join(self.__home_dir, 'Music/BdMusic')
         self.__store_dir = str(date.today()) 
+
+    def info_author(self):
+        assert self.__source_url
+        self.get_source_html()
+
+        jsonData = json.loads(self.__req_content)
+        artistData = jsonData.get('artist')
+        albumData = jsonData.get('album')
+        songData = jsonData.get('song')
+
+        artist_table = PrettyTable(['歌手', 'ID'])
+        for each in artistData:
+            artist_table.add_row([each.get('artistname'), 
+                            each.get('artistid')])
+
+        album_table = PrettyTable(['专辑', 'ID'])
+        for each in albumData:
+            album_table.add_row([each.get('albumname'), 
+                                 each.get('albumid')])
+
+        song_table = PrettyTable(['歌名', '歌手', '歌曲ID'])
+        for each in songData:
+            song_table.add_row([each.get('songname'), 
+                                each.get('artistname'), 
+                                each.get('songid')])
+
+        # display
+        print(artist_table)
+        print(album_table)
+        print(song_table)
 
     def search(self):
         assert self.__req_content
@@ -130,6 +163,7 @@ class BaiduMusic:
             'song': r'Song',
             'songlist': r'<h2>([^"]+)</h2>', # r'</span>([^"]+)</h2>'),
             'tag': '<span class="title">([^"]+)</span>',
+            'info': r'AuthorInfo',
         }
 
     def set_store_dir(self, type):
@@ -137,7 +171,7 @@ class BaiduMusic:
             assert self.__req_content
 
         # if type in ('album', 'author', 'song'):
-        if type in ('author', 'song', 'moreabout'):
+        if type in ('author', 'song', 'moreabout', 'info'):
             self.__store_dir = self.__store_dir_re[type]
             return
 
@@ -189,6 +223,9 @@ class BaiduMusic:
     def get_song_id_list(self):
         assert self.__source_url
 
+        if self.__para in ['info']:
+            return 
+
         if self.get_source_html() == -1:
             return 
 
@@ -214,6 +251,10 @@ class BaiduMusic:
         self.set_url(type, para)
         self.get_song_id_list()
         self.set_store_dir(type)
+
+        if self.__type == 'info':
+            self.info_author()
+            return
 
         if not self.__song_number:
             sys.stdout.write('IndexError 404: No song found.\n')
@@ -253,6 +294,7 @@ class BaiduMusic:
         print('  -a, --album ID         Download By album id.')
         print('  -f, --find keyword     Download By song id.')
         print('  -h, --help             Get help about usage and description.')
+        print('  -i, --info authorname  Get author info.')
         print('  -l, --songlist ID      Download By songlist id.')
         print('  -m, --moreabout keyword Download more about keyword.')
         print('  -n, --author Name      Download By author name.')
@@ -276,10 +318,10 @@ if __name__ == '__main__':
     try:
         opts, args = getopt.getopt(
             sys.argv[1:],
-            'a:r:m:n:hp:s:l:t:u:vf:',
-            ['album', 'artist', 'moreabout', 'author', 'help', 
-             'path', 'song', 'songlist', 'tag', 
-             'url', 'version', 'find']
+            'a:r:m:n:hi:p:s:l:t:u:vf:',
+            ['album=', 'artist=', 'moreabout=', 'author=', 'help', 
+             'info=', 'path=', 'song=', 'songlist=', 'tag=', 
+             'url=', 'version', 'find=']
             )
     except getopt.GetoptError:
         sys.stdout.write('Get Opt Error\n')
@@ -333,6 +375,9 @@ if __name__ == '__main__':
             ID = a
         if o in ('-m', '--moreabout'):
             Type = 'moreabout'
+            ID = a
+        if o in ('-i', '--info'):
+            Type = 'info'
             ID = a
             
     if Type == 'url':
