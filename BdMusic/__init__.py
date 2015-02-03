@@ -4,5 +4,5 @@ import sys
 import getopt
 import re
 
-from .BaiduMusic import main
+from .BaiduMusic import BaiduMusic, main
 
