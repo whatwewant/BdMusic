@@ -186,6 +186,10 @@ class BaiduMusic:
         if dirname_list != []:
             self.__store_dir = dirname_list[0].strip()
 
+        if type in ('album'):
+            self.__store_dir = os.path.join(r'专辑', 
+                                            self.__store_dir)
+
     def get_source_html(self):
         assert self.__source_url
         if self.__type == 'song':
