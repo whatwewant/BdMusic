@@ -1,6 +1,15 @@
 Project History: BdMusic 
 -----------------------
 
+#### 0.0.14 (2015-02-06) 
+----------------------------------------
+#### Behavioural Changes
+* simple player option `-p`
+
+#### Bugfixes
+* null
+
+
 #### 0.0.13 (2015-02-04) 
 ----------------------------------------
 #### Behavioural Changes
