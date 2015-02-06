@@ -15,7 +15,7 @@ except :
 
 from downloadhelper import Download
 
-from player import BasePlayer as Player
+from .player import BasePlayer as Player
 
 class MusicDownload(object):
 

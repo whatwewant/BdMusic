@@ -7,7 +7,7 @@ import re
 import json
 from datetime import date
 
-from BaiduMusicUtils import MusicDownload
+from .BaiduMusicUtils import MusicDownload
 try:
     import requests
     from prettytable import PrettyTable
