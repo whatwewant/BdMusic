@@ -22,7 +22,7 @@ except:
 
 class BaiduMusic:
     
-    VERSION = '0.0.14'
+    VERSION = '0.0.15'
 
     def __init__(self):
         self.__BASE_URL = {
@@ -351,7 +351,7 @@ def main():
     ID = None
     Type = None
     Url = None
-    Name = None
+    Play = False
     
     for o, a in opts:
         if Type != None:
@@ -377,7 +377,6 @@ def main():
             ID = a
         if o in ('-n', '--author'):
             Type = 'author'
-            Name = a
             ID = a
         if o in ('-u', '--url'):
             Type = 'url'
