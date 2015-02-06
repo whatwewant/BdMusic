@@ -7,8 +7,8 @@ import re
 import json
 from datetime import date
 
+from BaiduMusicUtils import MusicDownload
 try:
-    from .BaiduMusicUtils import MusicDownload
     import requests
     from prettytable import PrettyTable
 except:
@@ -22,7 +22,7 @@ except:
 
 class BaiduMusic:
     
-    VERSION = '0.0.11'
+    VERSION = '0.0.13'
 
     def __init__(self):
         self.__BASE_URL = {
@@ -54,6 +54,12 @@ class BaiduMusic:
         self.__home_dir = os.environ.get('HOME', '.')
         self.__default_base_dir = os.path.join(self.__home_dir, 'Music/BdMusic')
         self.__store_dir = str(date.today()) 
+
+        self.__doplay = False
+
+    def set_do_play(self, play=False):
+        if play:
+            self.__doplay = play
 
     def info_author(self):
         assert self.__source_url
@@ -272,6 +278,8 @@ class BaiduMusic:
             self.search()
             return 
 
+        # if self.__doplay:
+        #    self.__store_dir = '播放过的音乐'
         self.__store_dir = os.path.join(self.__default_base_dir, 
                                         self.__store_dir)
         if not os.path.exists(self.__store_dir):
@@ -282,7 +290,7 @@ class BaiduMusic:
         print('Length: 总共%d首歌' % self.__song_number)
         id = 1
         for song_id in self.__song_id_list:
-            md = MusicDownload()
+            md = MusicDownload(play=self.__doplay)
             if md.download_song(song_id, self.__store_dir, id, 
                                 self.__song_number)[2] >= 0:
                 id += 1
@@ -305,7 +313,7 @@ class BaiduMusic:
         print('  -l, --songlist ID      Download By songlist id.')
         print('  -m, --moreabout keyword Download more about keyword.')
         print('  -n, --author Name      Download By author name.')
-        print('  -p, --path PATH        Specify the filepath where you want to store the file')
+        print('  -p, --play             Specify the filepath where you want to store the file')
         print('  -r, --artist ID        Download By artist id.')
         print('  -s, --song ID          Download By song id.')
         print('  -t, --tag Name         Download By tag name.')
@@ -325,9 +333,9 @@ def main():
     try:
         opts, args = getopt.getopt(
             sys.argv[1:],
-            'a:r:m:n:hi:p:s:l:t:u:vf:',
+            'a:r:m:n:hi:ps:l:t:u:vf:',
             ['album=', 'artist=', 'moreabout=', 'author=', 'help', 
-             'info=', 'path=', 'song=', 'songlist=', 'tag=', 
+             'info=', 'play', 'song=', 'songlist=', 'tag=', 
              'url=', 'version', 'find=']
             )
     except getopt.GetoptError:
@@ -386,6 +394,8 @@ def main():
         if o in ('-i', '--info'):
             Type = 'info'
             ID = a
+        if o in ('-p', '--play'):
+            Play = True
             
     if Type == 'url':
         uu = re.findall(r'http://music.baidu.com/([^/"]+)', Url)
@@ -401,6 +411,7 @@ def main():
         sys.exit(-1)
     # Main
     BdMusic = BaiduMusic()
+    BdMusic.set_do_play(Play)
     BdMusic.download(Type, ID)
 
 if __name__ == '__main__':

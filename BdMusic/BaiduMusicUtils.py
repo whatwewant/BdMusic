@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # coding=utf-8
 
+import os
 import requests
 import json
 
@@ -14,9 +15,11 @@ except :
 
 from downloadhelper import Download
 
+from player import BasePlayer as Player
+
 class MusicDownload(object):
 
-    def __init__(self):
+    def __init__(self, play=False):
         self.__SONG_DATA_URL = r'http://music.baidu.com/data/music/fmlink?songIds='
         self.__SONG_REAL_URL = None
 
@@ -26,6 +29,9 @@ class MusicDownload(object):
         self.__SONG_AUTHOR = None
         self.__SONG_FORMAT = None
         self.__SONG_ALBUM = None
+
+        # play music
+        self.__play = play
 
     def get_real_song_data(self, song_id):
         self.__SONG_ID = song_id
@@ -70,9 +76,22 @@ class MusicDownload(object):
         if not self.__SONG_REAL_URL:
             print("No valid Url.")
         else:
-            download = Download()
-            download_flag = download.download(self.__SONG_REAL_URL, 
+            if not self.__play:
+                download = Download(modified=False)
+                download_flag = download.download(self.__SONG_REAL_URL, 
                                               mp3Name, path, id, ids)
+            else :
+                sys.stdout.write('稍等, 正在缓冲 %s...\n' 
+                                 % mp3Name.split('.')[0])
+                sys.stdout.flush()
+                download = Download(modified=False, quiet=True)
+                download_flag = download.download(self.__SONG_REAL_URL, 
+                                              mp3Name, path, id, ids)
+                sys.stdout.write('Playing %s ...\n' % mp3Name.split('.')[0])
+                sys.stdout.flush()
+                handler = Player(os.path.join(path, mp3Name)).start()
+                handler.wait()
+
         return download_flag
 
     def get_real_song_url(self, song_id):

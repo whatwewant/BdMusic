@@ -1,6 +1,15 @@
 Project History: BdMusic 
 -----------------------
 
+#### 0.0.13 (2015-02-04) 
+----------------------------------------
+#### Behavioural Changes
+* whatever files have been modified, it doesnot download them twice.
+
+#### Bugfixes
+* null
+
+
 #### 0.0.10 (2015-02-04) 
 ----------------------------------------
 #### Behavioural Changes
