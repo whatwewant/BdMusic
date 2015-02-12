@@ -1,6 +1,16 @@
 Project History: BdMusic 
 -----------------------
 
+#### 0.0.17 (2015-02-12) 
+----------------------------------------
+#### Behavioural Changes
+* change play action
+* add play around action
+
+#### Bugfixes
+* null
+
+
 #### 0.0.14 (2015-02-06) 
 ----------------------------------------
 #### Behavioural Changes

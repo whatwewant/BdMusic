@@ -18,7 +18,7 @@ try:
 except :
     pass
 
-from .player import BasePlayer as Player
+# from .player import BasePlayer as Player
 
 class MusicDownload(object):
 
@@ -75,28 +75,30 @@ class MusicDownload(object):
             format = self.__SONG_FORMAT,
             ).strip()
 
-        download_flag = [0, 0, 0, 'unknownfilename']
+        download_flag = [0, 0, 0, '']
+        file_name = os.path.join(path, mp3Name)
+        if os.path.exists(file_name):
+            download_flag[3] = file_name
+            return download_flag
+
         if not self.__SONG_REAL_URL:
             print("No valid Url.")
         else:
-            if not self.__play:
-                download = Download(modified=False)
-                download_flag = download.download(self.__SONG_REAL_URL, 
-                                              mp3Name, path, id, ids)
-            else :
+            if self.__play:
                 sys.stdout.write('稍等, 正在缓冲 %s...\n' 
                                  % mp3Name.split('.')[0])
                 sys.stdout.flush()
-                download = Download(modified=False, quiet=True)
-                download_flag = download.download(self.__SONG_REAL_URL, 
+
+            download = Download(modified=False, quiet=self.__play)
+            download_flag = download.download(self.__SONG_REAL_URL, 
                                               mp3Name, path, id, ids)
-                sys.stdout.write('Playing %s ...\n' % mp3Name.split('.')[0])
-                sys.stdout.flush()
-                handler = Player(os.path.join(path, mp3Name)).start()
-                handler.wait()
+            # sys.stdout.write('Playing %s ...\n' % mp3Name.split('.')[0])
+            # sys.stdout.flush()
+            # handler = Player(os.path.join(path, mp3Name)).start()
+            # handler.wait()
 
         download_flag = list(download_flag)
-        download_flag[3] = os.path.join(path, mp3Name)
+        download_flag.append(file_name)
         return download_flag
 
     def get_real_song_url(self, song_id):

@@ -2,29 +2,33 @@
 # coding=utf-8
 
 import sys
+try:
+    reload(sys)
+    sys.setdefaultencoding('utf-8')
+except:
+    pass
 import os
 import re
 import json
 from datetime import date
 
-from .BaiduMusicUtils import MusicDownload
 try:
     import requests
     from prettytable import PrettyTable
 except:
     pass
 
-try:
-    reload(sys)
-    sys.setdefaultencoding('utf-8')
-except:
-    pass
+from .BaiduMusicUtils import MusicDownload
+from .player import BasePlayer as Player
 
 class BaiduMusic:
     
-    VERSION = '0.0.16'
+    VERSION = '0.1.1'
 
-    def __init__(self):
+    def __init__(self, play=False, play_around=False, *args, **kwargs):
+        # @args
+        # 1. play
+        # 2. play around
         self.__BASE_URL = {
             'album': r'http://music.baidu.com/album/{para}',
             'artist': r'http://music.baidu.com/artist/{para}',
@@ -55,7 +59,8 @@ class BaiduMusic:
         self.__default_base_dir = os.path.join(self.__home_dir, 'Music/BdMusic')
         self.__store_dir = str(date.today()) 
 
-        self.__doplay = False
+        self.__doplay = play
+        self.__play_around = play_around
         self.__page_number = 5 # default 5
 
     def set_do_play(self, play=False):
@@ -291,11 +296,41 @@ class BaiduMusic:
         print('Dir: %s' % self.__store_dir)
         print('Length: 总共%d首歌' % self.__song_number)
         id = 1
+        all_files = []
         for song_id in self.__song_id_list:
             md = MusicDownload(play=self.__doplay)
-            if md.download_song(song_id, self.__store_dir, id, 
-                                self.__song_number)[2] >= 0:
+            status = md.download_song(song_id, self.__store_dir, id, 
+                                self.__song_number)
+            if status[2] >= 0:
                 id += 1
+
+            file_name = status[3]
+            all_files.append(file_name)
+            if self.__doplay and file_name:
+                sys.stdout.write('Playing %s ...\n' % 
+                                 file_name.split('/').pop()\
+                                    .replace('.mp3', ''))
+                sys.stdout.flush()
+                try:
+                    handler = Player(file_name).start()
+                    handler.wait()
+                except KeyboardInterrupt:
+                    print('\nOMG, 你竟然主动终止播放!!!太伤心了！多角落哭泣！\n')
+                    sys.exit(-1)
+        
+        while self.__play_around:
+            for each in all_files:
+                sys.stdout.write('Playing %s ...\n' % 
+                                 each.split('/').pop()\
+                                    .replace('.mp3', ''))
+                sys.stdout.flush()
+                try:
+                    handler = Player(each).start()
+                    handler.wait()
+                except KeyboardInterrupt:
+                    print('\nOMG, 你竟然主动终止播放!!!太伤心了！多角落哭泣！\n')
+                    sys.exit(-1)
+        
 
     @staticmethod
     def usage(command):
@@ -315,6 +350,7 @@ class BaiduMusic:
         print('  -m, --moreabout keyword Download more about keyword.')
         print('  -n, --author Name      Download By author name.')
         print('  -p, --play             Specify the filepath where you want to store the file')
+        print('  -q, --play_around      Play Around.')
         print('  -r, --artist ID        Download By artist id.')
         print('  -s, --song ID          Download By song id.')
         print('  -t, --tag Name         Download By tag name.')
@@ -334,9 +370,9 @@ def main():
     try:
         opts, args = getopt.getopt(
             sys.argv[1:],
-            'a:r:m:n:hi:ps:l:t:u:vf:',
+            'a:r:m:n:hi:pqs:l:t:u:vf:',
             ['album=', 'artist=', 'moreabout=', 'author=', 'help', 
-             'info=', 'play', 'song=', 'songlist=', 'tag=', 
+             'info=', 'play', 'play_around', 'song=', 'songlist=', 'tag=', 
              'url=', 'version', 'find=']
             )
     except getopt.GetoptError:
@@ -353,6 +389,7 @@ def main():
     Type = None
     Url = None
     Play = False
+    PlayAround = False
     
     for o, a in opts:
         if Type != None:
@@ -396,6 +433,8 @@ def main():
             ID = a
         if o in ('-p', '--play'):
             Play = True
+        if o in ('-q', '--play_around'):
+            PlayAround = True
             
     if Type == 'url':
         uu = re.findall(r'http://music.baidu.com/([^/"]+)', Url)
@@ -410,8 +449,8 @@ def main():
         print('Error: Type Or ID Invalid')
         sys.exit(-1)
     # Main
-    BdMusic = BaiduMusic()
-    BdMusic.set_do_play(Play)
+    BdMusic = BaiduMusic(Play, PlayAround)
+    # BdMusic.set_do_play(Play)
     BdMusic.download(Type, ID)
 
 if __name__ == '__main__':
