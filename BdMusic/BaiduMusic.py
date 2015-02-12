@@ -22,7 +22,7 @@ except:
 
 class BaiduMusic:
     
-    VERSION = '0.0.15'
+    VERSION = '0.0.16'
 
     def __init__(self):
         self.__BASE_URL = {
@@ -56,10 +56,12 @@ class BaiduMusic:
         self.__store_dir = str(date.today()) 
 
         self.__doplay = False
+        self.__page_number = 5 # default 5
 
     def set_do_play(self, play=False):
         if play:
             self.__doplay = play
+            self.__page_number = 1
 
     def info_author(self):
         assert self.__source_url
@@ -207,7 +209,7 @@ class BaiduMusic:
             self.__req_content = ''
             self.__req_content += requests.get(self.__source_url).text
             start = 25
-            for i in range(5):
+            for i in range(self.__page_number):
                 source_url = r'http://music.baidu.com/data/user/getsongs?start=%s&ting_uid=%s' % (start, self.__para)
                 req = requests.get(source_url)
                 errorCode = req.json().get('errorCode')
@@ -222,7 +224,7 @@ class BaiduMusic:
             self.__req_content = ''
             self.__req_content += requests.get(self.__source_url).text
             start = 20
-            for i in range(5):
+            for i in range(self.__page_number):
                 source_url = self.__BASE_URL['moreabout'].format(\
                                         para=self.__para, start=start)
                 req = requests.get(source_url)
@@ -294,7 +296,6 @@ class BaiduMusic:
             if md.download_song(song_id, self.__store_dir, id, 
                                 self.__song_number)[2] >= 0:
                 id += 1
-
 
     @staticmethod
     def usage(command):

@@ -13,7 +13,10 @@ try:
 except :
     pass
 
-from downloadhelper import Download
+try:
+    from downloadhelper import Download
+except :
+    pass
 
 from .player import BasePlayer as Player
 
@@ -72,7 +75,7 @@ class MusicDownload(object):
             format = self.__SONG_FORMAT,
             ).strip()
 
-        download_flag = (0, 0, 0)
+        download_flag = [0, 0, 0, 'unknownfilename']
         if not self.__SONG_REAL_URL:
             print("No valid Url.")
         else:
@@ -92,6 +95,8 @@ class MusicDownload(object):
                 handler = Player(os.path.join(path, mp3Name)).start()
                 handler.wait()
 
+        download_flag = list(download_flag)
+        download_flag[3] = os.path.join(path, mp3Name)
         return download_flag
 
     def get_real_song_url(self, song_id):
